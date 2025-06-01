@@ -1,26 +1,23 @@
 
+import type { Provider } from "next-auth/providers"
+import GitHub from "next-auth/providers/github"
+import Google from "next-auth/providers/google"
 
-import type { NextAuthConfig } from 'next-auth';
+export const providers: Provider[] = [
+    GitHub({
+        clientId: process.env.AUTH_GITHUB_ID,
+        clientSecret: process.env.AUTH_GITHUB_SECRET,
+    }),
+    Google({
+        clientId: process.env.AUTH_GOOGLE_ID,
+        clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    })
+]
 
-export const authConfig = {
+export const conf = {
     pages: {
-        signIn: '/login',
-    }
-    ,
-    callbacks: {
-        authorized({ auth, request: { nextUrl } }) {
-            // this function is used to protect your routes!
-            // auth contains user session.
-            const isLoggedIn = !!auth?.user;
-            const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
-            if (isOnDashboard) {
-                if (isLoggedIn) return true;
-                return false; // Redirect unauthenticated users to login page
-            } else if (isLoggedIn) {
-                return Response.redirect(new URL('/dashboard', nextUrl));
-            }
-            return true;
-        },
+        signIn: "/login",
+        signOut: "/"
     },
-    providers: []
-} satisfies NextAuthConfig;
+    providers: providers,
+}

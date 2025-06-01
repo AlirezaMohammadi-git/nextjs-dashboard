@@ -1,89 +1,121 @@
-
-"use client"
-
 import { lusitana } from '@/app/ui/fonts';
-import { Button } from '@/app/ui/button';
 import {
   AtSymbolIcon,
-  ExclamationCircleIcon,
   KeyIcon,
+  ExclamationCircleIcon,
+  ArrowUpRightIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
-import { useActionState } from 'react';
-import { authenticate } from '../lib/actions';
-import { useSearchParams } from 'next/navigation';
+import { Button } from './button';
+import { providerMap, signIn } from '@/auth';
+import { redirect } from 'next/navigation';
+import { AuthError } from 'next-auth';
+import clsx from 'clsx';
+import { FaGithub } from "react-icons/fa";
+import { FaGoogle } from "react-icons/fa";
 
+const SIGNIN_ERROR_URL = "/error"
 export default function LoginForm() {
-  const searchParams = useSearchParams()
-  const callBackURL = searchParams.get('callbackUrl') || "/dashboard";
-  const [errorMessage, formData, isPending] = useActionState(authenticate, undefined)
-
-
+  const iconClass = "w-5 h-5"
   return (
-    <form className="space-y-3" action={formData}>
-      <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
-        <h1 className={`${lusitana.className} mb-3 text-2xl`}>
-          Please log in to continue.
-        </h1>
-        <div className="w-full">
-          <div>
-            <label
-              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
-              htmlFor="email"
-            >
-              Email
-            </label>
-            <div className="relative">
-              <input
-                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-                id="email"
-                type="email"
-                name="email"
-                placeholder="Enter your email address"
-                required
-              />
-              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+    <div className='flex flex-col  items-center rounded-lg bg-gray-100 px-6 pb-6 pt-8'>
+      <form className="">
+        <div className="">
+          <h1 className={`${lusitana.className} mb-2 text-2xl`}>
+            Please log in to continue.
+          </h1>
+          <div className="w-full">
+            <div>
+              <label
+                className="mb-3 mt-5 block text-xs font-medium text-gray-900"
+                htmlFor="email"
+              >
+                Email
+              </label>
+              <div className="relative">
+                <input
+                  className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+                  id="email"
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email address"
+                  required
+                />
+                <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+              </div>
+            </div>
+            <div className="mt-4">
+              <label
+                className="mb-3 mt-5 block text-xs font-medium text-gray-900"
+                htmlFor="password"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+                  id="password"
+                  type="password"
+                  name="password"
+                  placeholder="Enter password"
+                  required
+                  minLength={6}
+                />
+                <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+              </div>
             </div>
           </div>
-          <div className="mt-4">
-            <label
-              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
-              htmlFor="password"
-            >
-              Password
-            </label>
-            <div className="relative">
-              <input
-                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-                id="password"
-                type="password"
-                name="password"
-                placeholder="Enter password"
-                required
-                minLength={6}
-              />
-              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-          </div>
-        </div>
-        <div className="mt-10 flex h-8 items-end space-x-1">
-          <input type='hidden' name='redirectTo' value={callBackURL}></input>
-          <Button className='mt-4 w-full' aria-disabled={isPending}>
-            Log in <ArrowRightIcon className='ml-auto h-5 w-5 text-gray-50' />
+          <Button className="mt-6 w-full">
+            Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
           </Button>
-          <div
-            className='flex h-8 items-end space-x-1'
-            aria-live='polite'
-            aria-atomic='true'>
-            {errorMessage && (
-              <>
-                <ExclamationCircleIcon className='h-5 w-5 text-red-500' />
-                <p className='text-sm text-red-500'>{errorMessage}</p>
-              </>
-            )}
-          </div>
         </div>
-      </div>
-    </form>
+      </form>
+
+      <p className='text-gray-600 my-2'>or</p>
+
+      {Object.values(providerMap).map((provider) => (
+        <form className='w-full' key={provider.id}
+          action={
+            async () => {
+              "use server"
+              try {
+                await signIn(provider.id)
+              } catch (error) {
+                // Signin can fail for a number of reasons, such as the user
+                // not existing, or the user not having the correct role.
+                // In some cases, you may want to redirect to a custom error
+                if (error instanceof AuthError) {
+                  return redirect(`${SIGNIN_ERROR_URL}?error=${error.type}`)
+                }
+
+                // Otherwise if a redirects happens Next.js can handle it
+                // so you can just re-thrown the error and let Next.js handle it.
+                // Docs:
+                // https://nextjs.org/docs/app/api-reference/functions/redirect#server-component
+                throw error
+              }
+            }}
+        >
+          <Button className={clsx(
+            {
+              ["bg-gray-900 hover:bg-gray-800 active:bg-black"]: (provider.name as string === "GitHub" || "Google"),
+              ["mt-4"]: (provider.name as string === "Google"),
+              ["w-full"]: true
+            }
+          )} type="submit">
+            <div className="w-full flex flex-row justify-between items-center">
+              <div className='flex flex-row justify-center items-center gap-2'>
+                <span>Sign in with {provider.name}</span>
+                {
+                  (provider.name as string === "GitHub") ? <FaGithub className={iconClass} /> : <FaGoogle className={iconClass} />
+                }
+              </div>
+              <ArrowRightIcon className="w-5 h-5" />
+            </div>
+          </Button>
+        </form>
+      ))
+      }
+    </div >
   );
 }

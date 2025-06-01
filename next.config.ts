@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
   experimental: {
     // partial prerendering:
     ppr: "incremental"
+  },
+  images: {
+    domains: [
+      'lh3.googleusercontent.com', // Google avatars
+      'avatars.githubusercontent.com', // GitHub avatars
+    ],
   }
 };
 

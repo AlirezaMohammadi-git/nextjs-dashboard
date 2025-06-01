@@ -1,51 +1,25 @@
 
 
-import NextAuth from 'next-auth';
-import { authConfig } from './auth.config';
-import Credentials from 'next-auth/providers/credentials';
-import { Provider } from 'next-auth/providers';
-import { z } from 'zod';
-import postgres from 'postgres';
-import { User } from './app/lib/definitions';
-import bcrypt from "bcrypt"
+
+import NextAuth from "next-auth"
+import { providers, conf } from "./auth.config"
+
+export const providerMap = providers
+    .map((provider) => {
+        if (typeof provider === "function") {
+            const providerData = provider()
+            return { id: providerData.id, name: providerData.name }
+        } else {
+            return { id: provider.id, name: provider.name }
+        }
+    })
+    .filter((provider) => provider.id !== "credentials")
+
+export const { handlers, signIn, signOut, auth } = NextAuth({ ...conf })
 
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" })
-async function getUser(email: string) {
-    try {
-        const user = await sql<User[]>`select * from users where email=${email}`;
-        return user[0];
-    } catch (err) {
-        console.error(`Failed to fetch user : `, err)
-        throw new Error("Failed to fetch user.")
-    }
-}
 
 
-const providers: Provider[] = [
-    Credentials({
-        credentials: {
-            email: { label: "Email", type: "email" },
-            password: { label: "Password", type: "password" }
-        },
-        async authorize(credentials) {
-            const parsedCredentials = z
-                .object({ email: z.string().email(), password: z.string().min(6) })
-                .safeParse(credentials)
 
-            if (parsedCredentials.success) {
-                const { email, password } = parsedCredentials.data;
-                const user = await getUser(email);
-                if (!user) return null
-                const passwordMatches = await bcrypt.compare(password, user.password)
-                if (passwordMatches) return user;
-            }
-            return null;
-        },
-    }),
-]
-
-export const { signIn, signOut, auth } = NextAuth({
-    ...authConfig,
-    providers: providers
-});
+//todo : implement credentials method!
+//todo : customize auth user to have a type property and only allow admin type to access some routings.
