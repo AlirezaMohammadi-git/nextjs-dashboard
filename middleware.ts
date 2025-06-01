@@ -43,6 +43,7 @@ export default auth(async function middleware(req) {
         return Response.redirect(loginUrl)
     }
 
+    return;
 })
 
 

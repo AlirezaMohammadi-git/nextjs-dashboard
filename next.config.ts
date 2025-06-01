@@ -5,13 +5,13 @@ const nextConfig: NextConfig = {
   experimental: {
     // partial prerendering:
     ppr: "incremental"
+  },
+  images: {
+    domains: [
+      'lh3.googleusercontent.com', // Google avatars
+      'avatars.githubusercontent.com', // GitHub avatars
+    ],
   }
 };
-
-module.exports = {
-  images: {
-    remotePatterns: [new URL("https://avatars.githubusercontent.com/u/75356563?v=4")],
-  },
-}
 
 export default nextConfig;

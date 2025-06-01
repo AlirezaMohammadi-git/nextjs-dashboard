@@ -16,3 +16,10 @@ export const providerMap = providers
     .filter((provider) => provider.id !== "credentials")
 
 export const { handlers, signIn, signOut, auth } = NextAuth({ ...conf })
+
+
+
+
+
+//todo : implement credentials method!
+//todo : customize auth user to have a type property and only allow admin type to access some routings.
