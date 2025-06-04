@@ -1,25 +1,41 @@
+
+"use client"
+
 import { lusitana } from '@/app/ui/fonts';
 import {
   AtSymbolIcon,
   KeyIcon,
-  ExclamationCircleIcon,
-  ArrowUpRightIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
-import { providerMap, signIn } from '@/auth';
-import { redirect } from 'next/navigation';
+import { signIn } from '@/auth';
+import { redirect, useSearchParams } from 'next/navigation';
 import { AuthError } from 'next-auth';
 import clsx from 'clsx';
 import { FaGithub } from "react-icons/fa";
 import { FaGoogle } from "react-icons/fa";
+import { authenticate } from '../lib/actions';
+import { providerMap } from '@/auth.config';
+import { useActionState } from 'react';
+import { ExclamationCircleIcon } from '@heroicons/react/24/solid';
 
-const SIGNIN_ERROR_URL = "/error"
 export default function LoginForm() {
+
+
   const iconClass = "w-5 h-5"
+  //https://react.dev/reference/react/useActionState
+  const [state, formAction, isPending] = useActionState(authenticate, undefined)
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+
+
   return (
     <div className='flex flex-col  items-center rounded-lg bg-gray-100 px-6 pb-6 pt-8'>
-      <form className="">
+      <form action={formAction}>
+
+        <input type="hidden" name="method" value="credentials" />
+        <input type="hidden" name="redirectTo" value={callbackUrl} />
+
         <div className="">
           <h1 className={`${lusitana.className} mb-2 text-2xl`}>
             Please log in to continue.
@@ -39,6 +55,7 @@ export default function LoginForm() {
                   type="email"
                   name="email"
                   placeholder="Enter your email address"
+                  aria-disabled={isPending}
                   required
                 />
                 <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -58,6 +75,7 @@ export default function LoginForm() {
                   type="password"
                   name="password"
                   placeholder="Enter password"
+                  aria-disabled={isPending}
                   required
                   minLength={6}
                 />
@@ -65,7 +83,7 @@ export default function LoginForm() {
               </div>
             </div>
           </div>
-          <Button className="mt-6 w-full">
+          <Button aria-disabled={isPending} className="mt-6 w-full">
             Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
           </Button>
         </div>
@@ -77,35 +95,24 @@ export default function LoginForm() {
         <form className='w-full' key={provider.id}
           action={
             async () => {
-              "use server"
-              try {
-                await signIn(provider.id)
-              } catch (error) {
-                // Signin can fail for a number of reasons, such as the user
-                // not existing, or the user not having the correct role.
-                // In some cases, you may want to redirect to a custom error
-                if (error instanceof AuthError) {
-                  return redirect(`${SIGNIN_ERROR_URL}?error=${error.type}`)
-                }
-
-                // Otherwise if a redirects happens Next.js can handle it
-                // so you can just re-thrown the error and let Next.js handle it.
-                // Docs:
-                // https://nextjs.org/docs/app/api-reference/functions/redirect#server-component
-                throw error
-              }
             }}
         >
-          <Button className={clsx(
+
+
+          <input type="hidden" name="method" value="credentials" />
+          <input type="hidden" name="providerId" value={provider.id} />
+
+
+          <Button aria-disabled={isPending} className={clsx(
             {
               ["bg-gray-900 hover:bg-gray-800 active:bg-black"]: (provider.name as string === "GitHub" || "Google"),
               ["mt-4"]: (provider.name as string === "Google"),
               ["w-full"]: true
             }
-          )} type="submit">
+          )} >
             <div className="w-full flex flex-row justify-between items-center">
               <div className='flex flex-row justify-center items-center gap-2'>
-                <span>Sign in with {provider.name}</span>
+                <span>Sign in with</span>
                 {
                   (provider.name as string === "GitHub") ? <FaGithub className={iconClass} /> : <FaGoogle className={iconClass} />
                 }
@@ -116,6 +123,14 @@ export default function LoginForm() {
         </form>
       ))
       }
+
+      {state && (
+        <>
+          <ExclamationCircleIcon className='h-5 w-5 text-red-500' />
+          <p className='text-sm text-red-500'>{state}</p>
+        </>
+      )}
+
     </div >
   );
 }

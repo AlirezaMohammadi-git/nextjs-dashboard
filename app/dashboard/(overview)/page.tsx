@@ -5,9 +5,8 @@ import RevenueChart from "../../ui/dashboard/revenue-chart"
 import { lusitana } from "../../ui/fonts"
 import { CardSkeleton, LatestInvoicesSkeleton, RevenueChartSkeleton } from "@/app/ui/skeletons"
 import { auth } from "@/auth"
-import { UserCircleIcon } from "@heroicons/react/24/outline"
+import { UserCircleIcon } from "@heroicons/react/24/solid"
 import Image from "next/image"
-import { Button } from "@/app/ui/button"
 
 
 const DashboardMainPage = async () => {
@@ -20,7 +19,7 @@ const DashboardMainPage = async () => {
 
     const userImage = user.image ?
         <Image className="rounded-full" src={user.image} width={50} height={50} alt="User image" /> :
-        <UserCircleIcon />
+        <UserCircleIcon width={50} height={50} />
     return (
         <main>
 

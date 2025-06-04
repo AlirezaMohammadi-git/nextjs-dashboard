@@ -7,6 +7,8 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import postgres from "postgres"
 import { z } from "zod"
+import bcrypt from 'bcrypt';
+import { User } from "./definitions"
 // https://zod.dev/
 
 export type State = {
@@ -124,18 +126,60 @@ export async function deleteInvoice(id: string) {
     // user is already in invoices page!
 }
 
-export async function authenticate(prevState: string | undefined, formData: FormData) {
+export async function getUserFromDb(email: string, password: string) {
+
     try {
-        await signIn('credentials', formData)
-    } catch (error) {
-        if (error instanceof AuthError) {
-            switch (error.type) {
-                case "CredentialsSignin":
-                    return "Invalid credentials.";
-                default:
-                    return 'Something went wrong'
+        const user = await sql<User[]>`SELECT * FROM users WHERE email=${email}`;
+        if (!user || user.length === 0) return null;
+
+        const match = await bcrypt.compare(password, user[0].password);
+        return match ? user[0] : null;
+    } catch (err) {
+        console.log("Failed to load user from db.")
+        throw new Error("Failed to load user from db.")
+    }
+
+}
+
+const SIGNIN_ERROR_URL = "/error"
+export async function authenticate(prevState: string | undefined, formData: FormData) {
+
+    // these information filled with inputs
+    const method = formData.get("method") as string;
+    if (method === "credentials") {
+        try {
+            await signIn('credentials', formData)
+        } catch (error) {
+            if (error instanceof AuthError) {
+                switch (error.type) {
+                    case "CredentialsSignin":
+                        return "Invalid credentials.";
+                    default:
+                        return 'Something went wrong'
+                }
             }
+            throw error;
         }
-        throw error;
+    } else if (method === "OAuth") {
+        try {
+
+            const providerId = formData.get("providerId") as string;
+            console.log("Provided informations : ", providerId, method)
+            await signIn(providerId)
+        } catch (error) {
+            // Signin can fail for a number of reasons, such as the user
+            // not existing, or the user not having the correct role.
+            // In some cases, you may want to redirect to a custom error
+            if (error instanceof AuthError) {
+                return redirect(`${SIGNIN_ERROR_URL}?error=${error.type}`)
+            }
+
+            // Otherwise if a redirects happens Next.js can handle it
+            // so you can just re-thrown the error and let Next.js handle it.
+            // Docs:
+            // https://nextjs.org/docs/app/api-reference/functions/redirect#server-component
+            throw error
+        }
+
     }
 }

@@ -2,7 +2,7 @@
 
 
 import { privateRoutes } from "./app/login/privateRoutes";
-import { conf as authConfig } from "./auth.config"
+import { config as authConfig } from "./auth.config"
 import NextAuth from "next-auth"
 
 // Use only one of the two middleware options below
