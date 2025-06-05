@@ -1,8 +1,5 @@
 
-
-
-import { privateRoutes } from "./app/login/privateRoutes";
-import { config as authConfig } from "./auth.config"
+import { AuthConfig } from "./auth.config"
 import NextAuth from "next-auth"
 
 // Use only one of the two middleware options below
@@ -10,7 +7,7 @@ import NextAuth from "next-auth"
 // export const { auth: middleware } = NextAuth(authConfig)
 
 // 2. Wrapped middleware option
-const { auth } = NextAuth(authConfig)
+const { auth } = NextAuth(AuthConfig)
 export default auth(async function middleware(req) {
     // Your custom middleware logic goes here
     console.log("middleware called")
@@ -47,6 +44,11 @@ export default auth(async function middleware(req) {
 })
 
 
+export const privateRoutes = [
+    "/dashboard",
+    "/seed",
+    "/query"
+];
 export const config = {
     matchers: privateRoutes
 }

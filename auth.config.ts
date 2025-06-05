@@ -67,7 +67,7 @@ export const providers: Provider[] = [
     })
 ]
 
-export const config = {
+export const AuthConfig = {
     pages: {
         signIn: "/login",
         signOut: "/"
