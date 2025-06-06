@@ -1,6 +1,10 @@
 import React, { Suspense } from "react"
 import LoginForm from "../ui/login-form"
+import { Metadata } from 'next';
 
+export const metadata: Metadata = {
+    title: 'login',
+};
 
 export default async function SignInPage() {
     return (

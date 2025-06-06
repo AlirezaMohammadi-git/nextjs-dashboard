@@ -7,7 +7,11 @@ import { CardSkeleton, LatestInvoicesSkeleton, RevenueChartSkeleton } from "@/ap
 import { auth } from "@/auth"
 import { UserCircleIcon } from "@heroicons/react/24/solid"
 import Image from "next/image"
+import { Metadata } from 'next';
 
+export const metadata: Metadata = {
+    title: 'Dashboard',
+};
 
 const DashboardMainPage = async () => {
     const session = await auth();

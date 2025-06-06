@@ -5,6 +5,12 @@ import styles from "./ui/home.module.css";
 import { lusitana } from './ui/fonts';
 import Image from 'next/image';
 import { absoluteUrl } from './lib/utils';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Acme',
+  description: 'The official Next.js Course Dashboard, built with App Router.',
+};
 
 export default function Page() {
   return (
