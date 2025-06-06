@@ -4,6 +4,7 @@ import GitHub from "next-auth/providers/github"
 import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
 import { object, string, ZodError } from "zod"
+import { absoluteUrl } from "./app/lib/utils"
 
 export const signInSchema = object({
     email: string({ required_error: "Email is required" })
@@ -69,8 +70,8 @@ export const providers: Provider[] = [
 
 export const AuthConfig = {
     pages: {
-        signIn: "/login",
-        signOut: "/"
+        signIn: absoluteUrl("/login"),
+        signOut: absoluteUrl("/")
     },
     providers
 }

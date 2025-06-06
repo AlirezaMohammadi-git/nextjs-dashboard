@@ -1,4 +1,5 @@
 
+import { absoluteUrl } from "./app/lib/utils"
 import { AuthConfig } from "./auth.config"
 import NextAuth from "next-auth"
 
@@ -16,9 +17,8 @@ export default auth(async function middleware(req) {
     const { nextUrl } = req;
     const isPrivateRoute = privateRoutes.includes(nextUrl.pathname)
     const isAuthRoute = nextUrl.pathname.includes("/login")
-    const url = "http://localhost:3000"
-    const loginUrl = `${url}/login`;
-    const dashboardUrl = `${url}/dashboard`
+    const loginUrl = absoluteUrl("/login")
+    const dashboardUrl = absoluteUrl("/dashboard")
     // making sure don't block auth handlers:
     const isApiRoute = nextUrl.pathname.includes("/api")
 
