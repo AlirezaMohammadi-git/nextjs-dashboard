@@ -8,9 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
-import { signIn } from '@/auth';
-import { redirect, useSearchParams } from 'next/navigation';
-import { AuthError } from 'next-auth';
+import { useSearchParams } from 'next/navigation';
 import clsx from 'clsx';
 import { FaGithub } from "react-icons/fa";
 import { FaGoogle } from "react-icons/fa";
@@ -18,6 +16,12 @@ import { authenticate } from '../lib/actions';
 import { providerMap } from '@/auth.config';
 import { useActionState } from 'react';
 import { ExclamationCircleIcon } from '@heroicons/react/24/solid';
+import { Spinner } from './loading';
+
+
+
+
+
 
 export default function LoginForm() {
 
@@ -93,15 +97,11 @@ export default function LoginForm() {
 
       {Object.values(providerMap).map((provider) => (
         <form className='w-full' key={provider.id}
-          action={
-            async () => {
-            }}
+          action={formAction}
         >
 
-
-          <input type="hidden" name="method" value="credentials" />
+          <input type="hidden" name="method" value="OAuth" />
           <input type="hidden" name="providerId" value={provider.id} />
-
 
           <Button aria-disabled={isPending} className={clsx(
             {
@@ -124,10 +124,16 @@ export default function LoginForm() {
       ))
       }
 
-      {state && (
+      {<Spinner show={isPending} size={"large"} className='text-blue-500 mt-3'>
+        <span className="mt-2 text-sm text-muted-foreground">Please wait...</span>
+      </Spinner>}
+
+      {state && !isPending && (
         <>
-          <ExclamationCircleIcon className='h-5 w-5 text-red-500' />
-          <p className='text-sm text-red-500'>{state}</p>
+          <div className='mt-4 flex flex-col justify-center items-center'>
+            <ExclamationCircleIcon className='h-5 w-5 text-red-500' />
+            <p className='text-sm text-red-500'>{state}</p>
+          </div>
         </>
       )}
 

@@ -164,7 +164,6 @@ export async function authenticate(prevState: string | undefined, formData: Form
         try {
 
             const providerId = formData.get("providerId") as string;
-            console.log("Provided informations : ", providerId, method)
             await signIn(providerId)
         } catch (error) {
             // Signin can fail for a number of reasons, such as the user

@@ -25,9 +25,14 @@ const DashboardMainPage = async () => {
 
             <div className="flex flex-row justify-start items-center gap-3 mb-5">
                 {userImage}
-                <h1 className={`${lusitana.className} text-xl md:text-2xl`}>
-                    {user.name as string}
-                </h1>
+
+                <div>
+                    <h1 className={`${lusitana.className} text-xl md:text-2xl`}>
+                        {user.name as string}
+                    </h1>
+                    <p className=" text-sm text-gray-400">{user.email as string}</p>
+                </div>
+
             </div>
 
             {/* All these components are loading there data in therselves! */}
